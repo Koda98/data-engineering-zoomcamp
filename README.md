@@ -1,11 +1,11 @@
-# Notes & Submissions for Data Engineering Zoomcamp 2023
+# Data Engineering Zoomcamp 2023
 
 ## Topics Covered
-- [ ] Docker and SQL
-- [ ] Data Ingestion
-- [ ] Data Warehouse
-- [ ] Analystics Engineering
-- [ ] Batch Processing
-- [ ] Streaming
+- [ ] Week 1: Docker and SQL
+- [ ] Week 2: Data Ingestion
+- [ ] Week 3: Data Warehouse
+- [ ] Week 4: Analytics Engineering
+- [ ] Week 5: Batch Processing
+- [ ] Week 6: Streaming
 
 https://github.com/DataTalksClub/data-engineering-zoomcamp
