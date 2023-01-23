@@ -1,4 +1,10 @@
 .idea
+.DS_Store
+*.tfstate
+*.tfstate.*
+**.terraform
+**.terraform.lock.*
+
 # Byte-compiled / optimized / DLL files
 __pycache__/
 *.py[cod]
