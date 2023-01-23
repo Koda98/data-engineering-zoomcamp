@@ -4,6 +4,8 @@
 *.tfstate.*
 **.terraform
 **.terraform.lock.*
+**/ny_taxi_postgres_data/*
+*.csv
 
 # Byte-compiled / optimized / DLL files
 __pycache__/
