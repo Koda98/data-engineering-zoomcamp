@@ -3,103 +3,114 @@
 ## [Intro to Docker](https://www.youtube.com/watch?v=EYNwNlOrpr0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
 * ### Why do we need Docker?
-    * Local experiments
-    * Reproducibility
-    * Running pipelines in the cloud
-    * Integration tests
-    * Spark
-    * Serverless
+
+  * Local experiments
+  * Reproducibility
+  * Running pipelines in the cloud
+  * Integration tests
+  * Spark
+  * Serverless
 
 * ### Simple data pipeline
 
-  #### Basic Dockerfile
-    ```dockerfile
-    FROM python:3.9
+#### Basic Dockerfile
 
-    RUN pip install pandas
+  ```dockerfile
+  FROM python:3.9
 
-    WORKDIR /app
-    COPY pipeline.py pipeline.py
+  RUN pip install pandas
 
-    ENTRYPOINT [ "python", "pipeline.py" ]
-    ```
+  WORKDIR /app
+  COPY pipeline.py pipeline.py
 
-  #### Basic pipeline
-    ```python
-    import sys
-    import pandas as pd
+  ENTRYPOINT [ "python", "pipeline.py" ]
+  ```
 
-    day = sys.argv[1]
-    print(day)
+#### Basic pipeline
 
-    print(f'Job finished for day {day}')
-    ```
+  ```python
+  import sys
+  import pandas as pd
+
+  day = sys.argv[1]
+  print(day)
+
+  print(f'Job finished for day {day}')
+  ```
 
   The following command will build the image
 
-    ```
-    $ docker build -t test:pandas .
-    ```
+  ```
+  docker build -t test:pandas .
+  ```
 
   Then we can run it
-
-    ```
-    $ docker run -it test:pandas 1-20-23
-    1-20-23
-    Job finished for day 1-20-23
-    ```
+  ```
+  $ docker run -it test:pandas 1-20-23
+  1-20-23
+  Job finished for day 1-20-23
+  ```
+    
 
 ## [Ingesting Data to Postgres](https://www.youtube.com/watch?v=2JM-ziJt0WI&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
 * ### Running Postgres locally with Docker
 
-  #### Using `pgcli` for connecting to the database
+#### Using `pgcli` for connecting to the database
+
   Run postgres with docker:
-    ```
-    docker run -it \
-      -e POSTGRES_USER="root" \
-      -e POSTGRES_PASSWORD="root" \
-      -e POSTGRES_DB="ny_taxi" \
-      -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
-      -p 5432:5432 \
-      postgres:13
-    ```
+
+  ```
+  docker run -it \
+    -e POSTGRES_USER="root" \
+    -e POSTGRES_PASSWORD="root" \
+    -e POSTGRES_DB="ny_taxi" \
+    -v $(pwd)/ny_taxi_postgres_data:/var/lib/postgresql/data \
+    -p 5432:5432 \
+    postgres:13
+  ```
+
   Connect to postgres with pgcli:
-    ```
-    pgcli -h localhost -p 5432 -u root -d ny_taxi
-    ```
+
+  ```
+  pgcli -h localhost -p 5432 -u root -d ny_taxi
+  ```
+
 * ### Ingesting the data into the database
-    ```python
-    import pandas as pd
-    from sqlalchemy import create_engine
-    from time import time
 
-    df = pd.read_csv('yellow_tripdata_2021-01.csv', nrows=100)
-    engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
+  ```python
+  import pandas as pd
+  from sqlalchemy import create_engine
+  from time import time
 
-    df_iter = pd.read_csv('yellow_tripdata_2021-01.csv', iterator=True, chunksize=100_000)
+  df = pd.read_csv('yellow_tripdata_2021-01.csv', nrows=100)
+  engine = create_engine('postgresql://root:root@localhost:5432/ny_taxi')
 
-    df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-    df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+  df_iter = pd.read_csv('yellow_tripdata_2021-01.csv', iterator=True, chunksize=100_000)
 
-    df.head(n=0).to_sql(name='yellow_taxi_data', con=engine, if_exists='replace')
-    df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+  df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+  df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-    for df in df_iter:
-        t_start = time()
+  df.head(n=0).to_sql(name='yellow_taxi_data', con=engine, if_exists='replace')
+  df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
 
-        df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
-        df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
+  for df in df_iter:
+      t_start = time()
 
-        df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
+      df.tpep_pickup_datetime = pd.to_datetime(df.tpep_pickup_datetime)
+      df.tpep_dropoff_datetime = pd.to_datetime(df.tpep_dropoff_datetime)
 
-        t_end = time()
+      df.to_sql(name='yellow_taxi_data', con=engine, if_exists='append')
 
-        print(f'inserted chunk..., took {(t_end - t_start):.3f} seconds')
-    ```
+      t_end = time()
+
+      print(f'inserted chunk..., took {(t_end - t_start):.3f} seconds')
+  ```
 
 ## [Connecting pgAdmin and Postgres](https://www.youtube.com/watch?v=hCAIVe9N0ow&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
+
 * ### The pgAdmin tool
+
     ```
     docker run -it \
       -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
@@ -107,13 +118,18 @@
       -p 8080:80 \
       dpage/pgadmin4
     ```
+
 * ### Docker networks
+
   Create a network
-    ``` 
-    $ docker create network pg-network
+
     ```
+    docker create network pg-network
+    ```
+
   Run postgres
-    ``` 
+
+    ```
     docker run -it \
       -e POSTGRES_USER="root" \
       -e POSTGRES_PASSWORD="root" \
@@ -124,8 +140,10 @@
       --name pg-database \
       postgres:13
     ```
+
   Run pgadmin
-    ``` 
+
+    ```
     docker run -it \
       -e PGADMIN_DEFAULT_EMAIL="admin@admin.com" \
       -e PGADMIN_DEFAULT_PASSWORD="root" \
@@ -136,11 +154,15 @@
     ```
 
 ## [Putting the ingestion script into Docker](https://www.youtube.com/watch?v=B1WwATwf-vY&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
+
 * ### Converting the Jupyter notebook to a Python script
+
     ```
     jupyter nbconvert --to=script upload-data.ipynb
     ```
+
 * ### Parametrizing the script with argparse
+
     ```python
     import argparse
     parser = argparse.ArgumentParser(description='Ingest CSV data to Postgres')
@@ -155,8 +177,10 @@
 
     args = parser.parse_args()
     ```
+
 * Dockerizing the ingestion script
-    ``` 
+
+    ```
     URL="https://github.com/DataTalksClub/nyc-tlc-data/releases/download/yellow/yellow_tripdata_2021-01.csv.gz"
 
     docker run -it \
@@ -172,9 +196,13 @@
     ```
 
 ## [Running Postgres and pgAdmin with Docker-Compose](https://www.youtube.com/watch?v=hKI6PkPhpa0&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
+
 * ### Why do we need Docker-compose
-    * Docker compose is a utility that allows us to put configurations for multiple containers in one file
+
+  * Docker compose is a utility that allows us to put configurations for multiple containers in one file
+
 * ### Docker-compose YAML file
+
     ```yaml
     services:
       pgdatabase:
@@ -200,14 +228,17 @@
     volumes:
       pgadmin_conn_data:
     ```
+
 * ### Running multiple containers with `docker-compose up`
-    * Run it: `docker-compose up`
-    * Run in detached mode: `docker-compose up -d`
-    * Shut it down: `docker-compose down`
+
+  * Run it: `docker-compose up`
+  * Run in detached mode: `docker-compose up -d`
+  * Shut it down: `docker-compose down`
 
 ## [SQL refresher](https://www.youtube.com/watch?v=QEcps_iskgg&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
 * ### Adding the Zones table
+
     ```python
     os.system(f"wget https://s3.amazonaws.com/nyc-tlc/misc/taxi+_zone_lookup.csv")
     df_zones = pd.read_csv('taxi+_zone_lookup.csv')
@@ -215,6 +246,7 @@
     ```
 
 * ### Inner joins
+
     ```sql
     SELECT 
         tpep_pickup_datetime,
@@ -230,7 +262,9 @@
         t."PULocationID" = zpu."LocationID" AND
         t."DOLocationID" = zdo."LocationID"
     ```
+
   or
+
     ```sql
     SELECT 
         tpep_pickup_datetime,
@@ -250,7 +284,9 @@
     ```
 
 * ### Basic data quality checks
-    * Checking for records with location ID not in trips table
+
+  * Checking for records with location ID not in trips table
+
       ```sql
       SELECT 
           tpep_pickup_datetime,
@@ -264,7 +300,9 @@
           "PULocationID" is NULL
       LIMIT 100
       ```
-    * Checking for location IDs in zones table not in trips table
+
+  * Checking for location IDs in zones table not in trips table
+
       ```sql
       SELECT 
           tpep_pickup_datetime,
@@ -280,10 +318,13 @@
       ```
 
 * ### Left, Right and Outer joins
+
   ![](sql-table-joins.png "SQL Joins")
 
 * ### Group by
-    * Calculate the number of trips per day
+
+  * Calculate the number of trips per day
+
     ```sql
     SELECT 
         CAST(tpep_dropoff_datetime AS DATE) as "day",
@@ -294,7 +335,9 @@
         CAST(tpep_dropoff_datetime AS DATE)
     ORDER BY "count" DESC;
     ```
-    * Other aggregations
+
+  * Other aggregations
+
     ```sql
     SELECT 
         CAST(tpep_dropoff_datetime AS DATE) as "day",
@@ -307,7 +350,9 @@
         CAST(tpep_dropoff_datetime AS DATE)
     ORDER BY "count" DESC;
     ```
-    * Group by multiple field
+
+  * Group by multiple field
+
     ```sql
     SELECT 
         CAST(tpep_dropoff_datetime AS DATE) as "day",
