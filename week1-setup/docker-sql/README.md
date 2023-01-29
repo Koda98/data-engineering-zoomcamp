@@ -45,12 +45,12 @@
   ```
 
   Then we can run it
+
   ```
   $ docker run -it test:pandas 1-20-23
   1-20-23
   Job finished for day 1-20-23
   ```
-    
 
 ## [Ingesting Data to Postgres](https://www.youtube.com/watch?v=2JM-ziJt0WI&list=PL3MmuxUbc_hJed7dXYoJw8DoCuVHhGEQb)
 
@@ -319,7 +319,7 @@
 
 * ### Left, Right and Outer joins
 
-  ![](sql-table-joins.png "SQL Joins")
+![SQL Joins](sql-table-joins.png "SQL Joins")
 
 * ### Group by
 
