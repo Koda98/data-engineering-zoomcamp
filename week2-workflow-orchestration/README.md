@@ -69,7 +69,6 @@
 ### 2. Introduction to Prefect concepts
 
 * What is Prefect?
-  * 
 * Installing Prefect
 * Prefect flow
 * Creating an ETL
