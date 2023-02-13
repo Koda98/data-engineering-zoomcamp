@@ -76,7 +76,7 @@
 - As data is added to a clustered table
   - The newly inserted data can be written to blocks that contain key ranges that overlap with the key ranges in previously written blocks
   - These overlapping keys weaken the sort property of the table
-- To maintain the performance characteristics of a clustered table 
+- To maintain the performance characteristics of a clustered table
   - BigQuery performs automatic re-clustering in the background to restore the sort property of the table
   - For partitioned tables, clustering is maintained for data within the scope of each partition.
   - Does not cost the end-user anything
