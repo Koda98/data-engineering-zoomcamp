@@ -9,7 +9,7 @@ import os
 @task(retries=3)
 def fetch(dataset_url: str) -> pd.DataFrame:
     """Read data from web into pandas DataFrame"""
-    df = pd.read_csv(dataset_url, compression='gzip')
+    df = pd.read_csv(dataset_url, compression='gzip', engine="pyarrow")
     return df
 
 
@@ -74,7 +74,7 @@ if __name__ == "__main__":
         parameters={
             "year": 2019,
             "start_month": 1,
-            "end_month": 2
+            "end_month": 12
         }
     )
     deployment.apply()
