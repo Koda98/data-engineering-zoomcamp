@@ -1,5 +1,7 @@
 # Data Engineering Zoomcamp 2023
 
+Homework and notes for [Data Engineering Zoomcamp](https://github.com/DataTalksClub/data-engineering-zoomcamp)
+
 ## Topics Covered
 
 - [X] Week 1: Docker, SQL, GCP, Terraform Setup
@@ -8,5 +10,3 @@
 - [ ] Week 4: Analytics Engineering
 - [ ] Week 5: Batch Processing
 - [ ] Week 6: Streaming
-
-https://github.com/DataTalksClub/data-engineering-zoomcamp
