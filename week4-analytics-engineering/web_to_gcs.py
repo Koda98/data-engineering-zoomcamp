@@ -1,23 +1,29 @@
 from pathlib import Path
 import pandas as pd
 from prefect import flow, task
-from prefect.deployments import Deployment
 from prefect_gcp.cloud_storage import GcsBucket
 import os
+import yaml
+
+
+@task()
+def get_schema(filename: str) -> dict:
+    """Read and return a dictionary of schemas from yaml file"""
+    with open(filename) as f:
+        schemas = yaml.safe_load(f)
+    return schemas
 
 
 @task(retries=3)
 def fetch(dataset_url: str) -> pd.DataFrame:
     """Read data from web into pandas DataFrame"""
-    df = pd.read_csv(dataset_url, compression='gzip', engine="pyarrow")
-    return df
+    return pd.read_csv(dataset_url, compression='gzip', engine="pyarrow")
 
 
 @task(log_prints=True)
-def clean(df: pd.DataFrame) -> pd.DataFrame:
+def fix_dtypes(df: pd.DataFrame, schema: dict) -> pd.DataFrame:
     """Fix dtype issues"""
-    df = df.convert_dtypes()
-    return df
+    return df.astype(schema)
 
 
 @task(log_prints=True)
@@ -47,13 +53,13 @@ def remove_downloaded_file(path: Path) -> None:
 
 
 @flow()
-def web_to_gcs(year: int, month: int, service: str) -> None:
+def web_to_gcs(year: int, month: int, service: str, schema_: dict) -> None:
     """ETL flow to load data from web to GCS"""
     dataset_file = f"{service}_tripdata_{year}-{month:02}"
     dataset_url = f"https://github.com/DataTalksClub/nyc-tlc-data/releases/download/{service}/{dataset_file}.csv.gz"
 
     df = fetch(dataset_url)
-    df_clean = clean(df)
+    df_clean = fix_dtypes(df, schema_)
     path = write_local(df_clean, dataset_file, service)
     write_gcs(path)
     remove_downloaded_file(path)
@@ -61,21 +67,21 @@ def web_to_gcs(year: int, month: int, service: str) -> None:
 
 
 @flow(name="main-flow", log_prints=True)
-def main_flow(year: int=2019, start_month: int=1, end_month: int=12, service: str="fhv") -> None:
+def ingest(year: int=2019, service: str="fhv") -> None:
     """Main ETL flow"""
-    for month in range(start_month, end_month + 1):
-        web_to_gcs(month=month, year=year, service=service)
+    schema = get_schema("schemas.yaml").get(service)
+    for month in range(1, 13):
+        web_to_gcs(
+            month=month,
+            year=year,
+            service=service,
+            schema_=schema
+        )
 
 
 if __name__ == "__main__":
-    deployment = Deployment.build_from_flow(
-        flow=main_flow,
-        name="ingest-taxi-data",
-        parameters={
-            "year": 2019,
-            "start_month": 1,
-            "end_month": 12,
-            "service": "green"
-        }
-    )
-    deployment.apply()
+    ingest(year=2019, service="green")
+    ingest(year=2020, service="green")
+    ingest(year=2019, service="yellow")
+    ingest(year=2020, service="yellow")
+    ingest(year=2019, service="fhv")
