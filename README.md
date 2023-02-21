@@ -7,6 +7,6 @@ Homework and notes for [Data Engineering Zoomcamp](https://github.com/DataTalksC
 - [X] Week 1: Docker, SQL, GCP, Terraform Setup
 - [X] Week 2: Data Ingestion
 - [X] Week 3: Data Warehouse
-- [ ] Week 4: Analytics Engineering
+- [X] Week 4: Analytics Engineering
 - [ ] Week 5: Batch Processing
 - [ ] Week 6: Streaming
